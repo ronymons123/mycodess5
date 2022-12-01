@@ -1,0 +1,190 @@
+#include<stdio.h>
+#include<stdlib.h>
+
+struct files
+{
+    char filename[20];
+    int nob; //no of blocks
+    int allocblocks[20];
+    int index;
+    int status;
+
+}file[20];
+
+int block[100],nf;
+
+int totalblocks,remblocks;
+
+void sequential()
+{
+    int index=0;
+    for(int i=0;i<nf;i++)
+    {
+        printf("\nEnter name of file %d: ",i+1);
+        scanf("%s",file[i].filename);
+        
+        printf("Enter no of blocks required for %s: ",file[i].filename);
+        scanf("%d",&file[i].nob);
+        
+        if(file[i].nob<=remblocks)
+        {
+            for(int j=0;j<file[i].nob;j++)
+            {
+                block[index]=1;
+                remblocks--;
+                file[i].allocblocks[j]=index;
+                index++;
+            }
+            file[i].status=1;
+        }    
+    }
+}
+
+void indexed()
+{
+    int index=0;
+    for(int i=0;i<nf;i++)
+    {
+        printf("\nEnter name of file %d: ",i+1);
+        scanf("%s",file[i].filename);
+        
+        printf("Enter no of blocks required for %s: ",file[i].filename);
+        scanf("%d",&file[i].nob);
+        
+        if(file[i].nob+1<=remblocks)
+        {
+            while(1)
+            {
+                int ind=rand()%totalblocks;
+                if(block[ind]==0)
+                {    
+                    file[i].index=ind;
+                    block[ind]=1;
+                    break;
+                }
+            }
+            
+            for(int j=0;j<file[i].nob;j++)
+            {
+                while(1)
+                {
+                    index=rand()%totalblocks;
+                    if(block[index]==0)
+                        break;
+                }
+                block[index]=1;
+                remblocks--;
+                file[i].allocblocks[j]=index;
+            }
+            file[i].status=1;
+        }    
+    }
+
+}
+
+void linked()
+{
+    int index=0;
+    for(int i=0;i<nf;i++)
+    {
+        printf("\nEnter name of file %d: ",i+1);
+        scanf("%s",file[i].filename);
+        
+        printf("Enter no of blocks required for %s: ",file[i].filename);
+        scanf("%d",&file[i].nob);
+        
+        if(file[i].nob<=remblocks)
+        {   
+            for(int j=0;j<file[i].nob;j++)
+            {
+                while(1)
+                {
+                    index=rand()%totalblocks;
+                    if(block[index]==0)
+                        break;
+                }
+                block[index]=1;
+                remblocks--;
+                file[i].allocblocks[j]=index;
+            }
+            file[i].status=1;
+        }    
+    }
+}
+
+void reset()
+{
+    remblocks=totalblocks;
+    for(int i=0;i<totalblocks;i++)
+        block[i]=0;
+    for(int i=0;i<nf;i++)
+        file[i].status=0;
+}
+
+void display(int opt)
+{
+    if(opt==2)
+        printf("\n\nFilename \t No of Blocks \t Index \t Blocks Alloted");
+    else
+        printf("\n\nFilename \t No of Blocks \t Blocks Alloted");
+
+    printf("\n--------------------------------------------------------");
+    
+    for(int i=0;i<nf;i++)
+    {
+        printf("\n%s \t\t %d \t\t ",file[i].filename,file[i].nob);
+        if(file[i].status!=0)
+        {
+            if(opt==2)
+                printf("%d \t ",file[i].index);
+
+            for(int j=0;j<file[i].nob;j++)
+                printf("%d, ",file[i].allocblocks[j]);
+            
+        }
+            
+        else
+            printf(" \tCan't be alloted");
+    }
+}
+
+int main()
+{
+    int opt;
+    
+    printf("Enter total no of blocks: ");
+    scanf("%d",&totalblocks);
+    
+    do
+    {
+        printf("\n\nWhich method would you like to use?");
+        printf("\n1.Sequential \n2.Indexed \n3.Linked \n4.Exit");
+        printf("\nEnter an option: ");
+        scanf("%d",&opt);
+
+        if(opt!=4)
+        {
+            printf("Enter total no of files: ");
+            scanf("%d",&nf);
+        }
+        switch(opt)
+        {
+            case 1: reset();
+                    sequential();
+                    display(opt);
+                    break;
+            case 2: reset();
+                    indexed();
+                    display(opt);
+                    break;
+            case 3: reset();
+                    linked();
+                    display(opt);
+                    break;
+            case 4: printf("Program Exited\n");
+                    break;
+            default: printf("Invalid choice");
+        }
+    }while(opt!=4);
+    return 0;
+}
