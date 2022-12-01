@@ -1,0 +1,164 @@
+#include<stdio.h>
+#include<stdlib.h>
+
+
+struct process
+{
+    int pid;
+    int psize;
+    int no_of_pages;
+    int allocframes[100];//to store alloted frame no
+    int frag;
+}p[10];
+
+int frame[100];
+int totalmem;
+int framesize;
+int no_of_frames;
+int ind;//to keep track of p[i]
+
+int frame[100];
+int remframes;//remaining available frames
+
+
+void display()
+{
+    int total_int_frag=0;
+    printf("\n\nPID \tPsize \tNo of Pages \tFrames Alloted ");
+
+    printf("\n--------------------------------------------------------");
+    
+    for(int i=0;i<ind;i++)
+    {
+        printf("\n%d \t%d \t%d \t\t",p[i].pid,p[i].psize,p[i].no_of_pages);
+        for(int j=0;j<p[i].no_of_pages;j++)
+            printf("%d, ",p[i].allocframes[j]);
+        total_int_frag+=p[i].frag;
+    }
+    printf("\n\nTotal Internal Fragmentation: %d \n",total_int_frag);
+}
+
+void insert()
+{
+    int pid;
+    int flag=0;
+    printf("\nEnter PID of new process: ");
+    scanf("%d",&pid);
+
+    for(int i=0;i<ind;i++)
+    {
+        if(pid==p[i].pid)
+        {    
+            printf("PID already exists.");
+            flag=1;
+            break;
+        }
+    }
+    if(flag==0)
+    {
+        p[ind].pid=pid;
+        printf("Enter size of process %d: ",p[ind].pid);
+        scanf("%d",&p[ind].psize);
+
+        p[ind].no_of_pages=p[ind].psize/framesize;
+        if(p[ind].psize%framesize>0)//in case if not properly divided
+            p[ind].no_of_pages++;
+    
+        int index;
+
+        if(p[ind].no_of_pages<=remframes)
+        {
+            for(int i=0;i<p[ind].no_of_pages;i++)
+            {
+                while(1)
+                {
+                    index=rand()%no_of_frames;
+                    if(frame[index]==0)
+                        break;
+                }
+                frame[index]=1;
+                remframes--;
+                p[ind].allocframes[i]=index;
+            }
+            p[ind].frag=(p[ind].no_of_pages*framesize-p[ind].psize);
+            ind++;
+            printf("Process successfully alloted.");
+            display();
+        }
+        else    
+            printf("Error. Insufficient no of frames");
+    }
+}
+
+void delete()
+{
+    int pid;
+    printf("Enter PID of process to delete: ");
+    scanf("%d",&pid);
+
+    int flag=0;
+    for(int i=0;i<ind;i++)
+    {
+        if(pid==p[i].pid)
+        {
+        
+            flag=1;
+            for(int j=0;j<p[i].no_of_pages;j++)
+            {  
+                frame[p[i].allocframes[j]]=0;
+                remframes++;
+            }
+            while(i<ind)
+            {
+                p[i]=p[i+1];
+                i++;
+            }
+            ind--;
+            printf("Process deleted",pid);
+            display();
+            break;
+        }
+    }
+    if(flag==0)
+        printf("Process not found");
+
+}
+
+int main()
+{
+    printf("Enter total memory size: ");
+    scanf("%d",&totalmem);
+    printf("Enter size of each frame: ");
+    scanf("%d",&framesize);
+
+    no_of_frames=totalmem/framesize;
+    remframes=no_of_frames;
+
+    printf("\nTotal no of frames: %d\n",no_of_frames);
+
+    for(int i=0;i<no_of_frames;i++)
+        frame[i]=0;
+
+    int opt;
+    do
+    {
+        printf("\n\nWhat would you like to do?");
+        printf("\n1.Insert a Process \n2.Delete a Process \n3.Exit");
+        printf("\nEnter an option: ");
+        scanf("%d",&opt);
+
+        switch(opt)
+        {
+            case 1: insert();
+                    break;
+            case 2: delete();
+                    break;
+            case 3: printf("Program Exited\n");
+                    break;
+            default: printf("Invalid Option");
+        }
+    }while(opt!=3);
+    
+    return 0;
+
+}
